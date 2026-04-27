@@ -1,8 +1,8 @@
 # Mirror awesome.fips.network (the nsite) to this repo's GitHub Pages.
 #
 # All the actual work — install nsyte, download, publish — lives in the
-# composite action at the repo root (action.yml). This workflow is the
-# entry point: triggers, permissions, and the FIPS-specific pubkey.
+# external deploy-nsite-to-pages action. This workflow is the entry point:
+# triggers, permissions, and the FIPS-specific defaults.
 #
 # Manual dispatch accepts overrides for one-off mirrors of other nsites.
 
@@ -34,7 +34,6 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/deploy.yml"
-      - "action.yml"
 
 # Newest deploy wins; older runs cancel so we never publish a stale snapshot
 # over a fresher one.
@@ -57,7 +56,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - id: mirror
-        uses: ./
+        # TODO: replace Origami74 with the GitHub user/org that hosts the
+        # deploy-nsite-to-pages repo, and pin to a tagged release once cut.
+        uses: Origami74/deploy-nsite-to-pages@main
         with:
           pubkey: ${{ inputs.pubkey || env.AWESOME_FIPS_NPUB }}
           name: ${{ inputs.name || env.AWESOME_FIPS_NAME }}
