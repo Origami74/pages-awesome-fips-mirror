@@ -1,0 +1,60 @@
+# Mirror awesome.fips.network (the nsite) to this repo's GitHub Pages.
+#
+# All the actual work — install nsyte, download, publish — lives in the
+# composite action at the repo root (action.yml). This workflow is the
+# entry point: triggers, permissions, and the FIPS-specific pubkey.
+#
+# Manual dispatch accepts overrides for one-off mirrors of other nsites.
+
+name: Mirror nsite to Pages
+
+# Default: mirror the FIPS publisher's "awesome" named nsite (kind 35128).
+# Overridable via dispatch inputs.
+env:
+  AWESOME_FIPS_NPUB: npub1y0gja7r4re0wyelmvdqa03qmjs62rwvcd8szzt4nf4t2hd43969qj000ly
+  AWESOME_FIPS_NAME: awesome
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      pubkey:
+        description: "Override pubkey (npub, hex, or NIP-05)"
+        required: false
+        type: string
+      name:
+        description: "Override named-nsite name (leave blank for root)"
+        required: false
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/deploy.yml"
+      - "action.yml"
+
+# Newest deploy wins; older runs cancel so we never publish a stale snapshot
+# over a fresher one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.mirror.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: mirror
+        uses: ./
+        with:
+          pubkey: ${{ inputs.pubkey || env.AWESOME_FIPS_NPUB }}
+          name: ${{ inputs.name || env.AWESOME_FIPS_NAME }}
