@@ -9,10 +9,13 @@
 name: Mirror nsite to Pages
 
 # Default: mirror the FIPS publisher's "awesome" named nsite (kind 35128).
-# Overridable via dispatch inputs.
+# Overridable via dispatch inputs. The Blossom server list is hardcoded
+# until the publisher's kind-10063 server-list event is gossiped widely; once
+# nsyte can discover servers via NIP-65-style lookup, this can be dropped.
 env:
   AWESOME_FIPS_NPUB: npub1y0gja7r4re0wyelmvdqa03qmjs62rwvcd8szzt4nf4t2hd43969qj000ly
   AWESOME_FIPS_NAME: awesome
+  AWESOME_FIPS_SERVERS: https://cdn.hzrd149.com,https://blossom.primal.net
 
 on:
   schedule:
@@ -58,3 +61,4 @@ jobs:
         with:
           pubkey: ${{ inputs.pubkey || env.AWESOME_FIPS_NPUB }}
           name: ${{ inputs.name || env.AWESOME_FIPS_NAME }}
+          servers: ${{ env.AWESOME_FIPS_SERVERS }}
